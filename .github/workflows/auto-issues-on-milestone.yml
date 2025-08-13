@@ -65,7 +65,7 @@ jobs:
             for (const issue of issues) {
               await github.rest.issues.create({
                 ...repo,
-                title: issue.title,
+                title: `[${milestoneTitle}] ${issue.title}`,
                 body: issue.body,
                 milestone: milestoneNumber
               });
