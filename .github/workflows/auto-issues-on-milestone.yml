@@ -21,36 +21,70 @@ jobs:
             const issues = [
               {
                 title: "Content Ingestion",
-                body: "Crawl and scrape the website, enrich with vectors (and any other required metadata, such as keywords)"
+                body: "Crawl and scrape the website, enrich with vectors (and any other required metadata, such as keywords)",
+                assignee: "SheikSadi"
               },
               {
                 title: "Validate Keyword Spreadsheet",
-                body: |
-                  Check whether the keyword spreadsheet is in the right format, which can be one of the following:
-                  - list of client's target keywords in one column.
-                  - list of target keywords in one column, with a list of target urls (from own site) in another column (i.e. the page(s) they optimized to try to rank for the target keyword)
-                  - real search engine keywords in one column (e.g. from Google Analytics), with landing URLs in another column optionally with additional columns such as clicks or impressions
-                  - no file. In this case, we will index the content on the site and synthesize questions that are answered by the pages on the site
+                body: (
+                  "Note that the keyword spreadsheet must have data present in all rows and columns, with columns correctly labelled, and be one of the following: "
+                  + "- list of client's target keywords in one column.\n"
+                  + "- list of target keywords in one column, with a list of target urls"
+                  + " (from own site) in another column (i.e. the page(s) they optimized "
+                  + "to try to rank for the target keyword)\n"
+                  + "- real search engine keywords in one column "
+                  + "(e.g. from Google Analytics), with landing URLs in another column,"
+                  + " optionally with additional columns such as clicks or impressions\n"
+                  + "- no file. In this case, we will index the content on the site "
+                  + "and synthesize questions that are answered by the pages on the site"
+                ),
+                assignee: "SheikSadi"
+              },
+              {
+                title: "Add Brand & Client information to MongoDB",
+                body: (
+                  "- Transfer data from Google Form via Superadmin Dashboard on Staging (Beta) version of platform"
+                  + " then do QA of Query Research on Staging to verify the details entered were correct.\n"
+                  + "- Following QA, Copy Client & Brands from Staging to Prod on MongoDB.\n"
+                  + "Note: This step is required because the Query Processing script currently refers "
+                  + "directly to the Prod MongoDB instance."
+                ),
+                assignee: "SheikSadi"
               },
               {
                 title: "Generate Synthetic Queries",
-                body: "Based on keywords list in the previous step (i.e. issue)"
-              },
-              {
-                title: "Create Snippets",
-                body: "Create the snippets based on the queries (previous step)"
+                body: "Based on keywords list in the previous step (i.e. issue) on MongoDB (Staging)",
+                assignee: "SheikSadi"
               },
               {
                 title: "Process Queries for GEO Dashboard",
-                body: "Process the queries on the platform (Staging) and schedule weekly “checkpoints” (on Prod) for reprocessing"
+                body: "Process the queries on the platform (Staging) and add client-id to client list for weekly \"checkpoints\" processing (reference: https://github.com/ELELEM-AI/GenAI-Engine-Optimi[...])",
+                assignee: "SheikSadi"
+              },
+              {
+                title: "Create Snippets",
+                body: "Create the snippets on Staging based on the queries (previous step)",
+                assignee: "SheikSadi"
+              },
+              {
+                title: "QA on Staging",
+                body: "Test all pages and functionality",
+                assignee: "SheikSadi"
               },
               {
                 title: "BigQuery Sync",
-                body: "Copy the BQ Staging data to Prod for the client data"
+                body: "Copy the client-related data from BQ Staging to Prod and Dev",
+                assignee: "SheikSadi"
+              },
+              {
+                title: "LLM API keys",
+                body: "Create GCP secret for the new client on each of the LLM platforms and add the GCP Secret to each client User in MongoDB Prod DB",
+                assignee: "SheikSadi"
               },
               {
                 title: "User Credentials",
-                body: "Give user credentials to commercial team to distibute to client users"
+                body: "Create User Credentials via Superadmin Dashboard on Prod. Give user credentials to commercial team to distribute to client users",
+                assignee: "SheikSadi"
               }
             ];
 
@@ -60,6 +94,7 @@ jobs:
                 ...repo,
                 title: `[${milestoneTitle}] ${issue.title}`,
                 body: issue.body,
-                milestone: milestoneNumber
+                milestone: milestoneNumber,
+                assignees: [issue.assignee]
               });
             }
