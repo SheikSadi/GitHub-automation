@@ -4,10 +4,6 @@ on:
   pull_request:
     types:
       - closed
-  # following is for testing purposes only, remove later
-  push:
-    branches:
-      - "*"
 
 permissions:
   contents: write
@@ -15,11 +11,10 @@ permissions:
 jobs:
   apply-formatting-and-open-pr:
     runs-on: ubuntu-latest
-    # if: github.event.pull_request.merged == true && github.actor != 'elelem-bot' && !startsWith(github.head_ref, 'apply-formatting/')
-    if: github.actor != 'elelem-bot' && !startsWith(github.head_ref, 'apply-formatting/')
+    if: github.event.pull_request.merged == true && github.actor != 'elelem-bot' && !startsWith(github.head_ref, 'apply-formatting/')
     env:
       GH_TOKEN: ${{ secrets.AUTO_PAT }}
-      PR_NUMBER: 0 #${{ github.event.pull_request.number }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
 
     steps:
       - name: Checkout code
@@ -63,6 +58,8 @@ jobs:
         if: steps.changes.outputs.changed == 'true'
         run: |
           set -e
+          git checkout main
+          git pull origin main
           git checkout -b apply-formatting/pr-${PR_NUMBER}
           git add .
           git commit -m "Apply code formatting with Black and Prettier"
@@ -72,4 +69,4 @@ jobs:
             --body "Applied Black (Python) and Prettier (JavaScript) formatting after merging #${PR_NUMBER} to main." \
             --head apply-formatting/pr-${PR_NUMBER} \
             --base main \
-            --reviewer SheikSadi
+            --reviewer ShikiSaji
