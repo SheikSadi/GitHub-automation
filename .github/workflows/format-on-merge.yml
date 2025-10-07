@@ -1,0 +1,69 @@
+name: Format Code on PR Merge
+
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  format-and-pr:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && !startsWith(github.head_ref, 'apply-formatting/')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13.2'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.16.0'
+
+      - name: Install Black
+        run: pip install black
+
+      - name: Install Prettier
+        run: npm install --global prettier
+
+      - name: Run Black on Python files
+        run: black .
+        working-directory: ./geo_backend
+
+      - name: Run Prettier on JS files
+        run: prettier --write "**/*.js"
+        working-directory: ./geo_frontend
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git config --global user.name "github-bot"
+          git config --global user.email "bot@example.com"
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create PR with formatting changes
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          PR_BOT_TOKEN: ${{ secrets.PR_BOT_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          git checkout -b format/${{ github.run_id }}
+          git add .
+          git commit -m "Apply code formatting with Black and Prettier"
+          git push --set-upstream https://x-access-token:${PR_BOT_TOKEN}@github.com/${{ github.repository }} apply-formatting/${{ github.run_id }}
+          gh pr create \
+            --title "Code formatting after #${{ PR_NUMBER }} merge" \
+            --body "Applied Black (Python) and Prettier (JavaScript) formatting after PR merge to main." \
+            --head apply-formatting/${{ github.run_id }} \
+            --base main
+        shell: bash
