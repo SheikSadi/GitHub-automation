@@ -55,6 +55,8 @@ jobs:
 
       - name: Create PR with formatting changes
         if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
           git checkout -b apply-formatting-to-pr-${PR_NUMBER}
