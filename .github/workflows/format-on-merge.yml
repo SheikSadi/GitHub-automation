@@ -62,7 +62,7 @@ jobs:
           git commit -m "Apply code formatting with Black and Prettier"
           git push --set-upstream https://x-access-token:${PR_BOT_TOKEN}@github.com/${{ github.repository }} apply-formatting/${{ github.run_id }}
           gh pr create \
-            --title "Code formatting after #${{ PR_NUMBER }} merge" \
+            --title "Code formatting after #${PR_NUMBER} merge" \
             --body "Applied Black (Python) and Prettier (JavaScript) formatting after PR merge to main." \
             --head apply-formatting/${{ github.run_id }} \
             --base main
