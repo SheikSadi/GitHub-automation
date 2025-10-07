@@ -1,15 +1,14 @@
 name: Format Code on PR Merge
 
 on:
-  pull_request:
-    types:
-      - closed
+  push:
+    branches:
+    - main
 
 jobs:
   apply-formatting-and-open-pr:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true && github.actor != 'elelem-bot' && !startsWith(github.head_ref, 'apply-formatting/')
-
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -59,9 +58,4 @@ jobs:
           git add .
           git commit -m "Apply code formatting with Black and Prettier"
           git push --set-upstream https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }} apply-formatting-to-pr-${PR_NUMBER}
-          gh pr create \
-            --title "Code formatting after #${PR_NUMBER} merge" \
-            --body "Applied Black (Python) and Prettier (JavaScript) formatting after PR merge to main." \
-            --head apply-formatting-to-pr-${PR_NUMBER} \
-            --base main
         shell: bash
