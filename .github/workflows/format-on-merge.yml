@@ -3,21 +3,19 @@ name: Format Code on PR Merge
 on:
   push:
     branches:
-    - main
-
-permissions:
-  contents: write
-  pull-requests: write
+      - main
 
 jobs:
   apply-formatting-and-open-pr:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && github.actor != 'elelem-bot' && !startsWith(github.head_ref, 'apply-formatting/')
     env:
-      PR_NUMBER: 19
-    
+      GH_TOKEN: ${{ secrets.PR_BOT_TOKEN }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -26,18 +24,18 @@ jobs:
         with:
           python-version: '3.13.2'
 
-      - name: Run Black on Python files
-        run: black .
-        working-directory: ./geo_backend
-      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.16.0'
+
       - name: Install Black
         run: pip install black
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version: '20.16.0'
-        
+      - name: Run Black on Python files
+        run: black .
+        working-directory: ./geo_backend
+
       - name: Run Prettier on JS files
         run: npx prettier --write "**/*.js"
         working-directory: ./geo_frontend
@@ -54,9 +52,7 @@ jobs:
           fi
 
       - name: Create PR with formatting changes
-        if: steps.changes.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.AUTO_PAT }}
+        if: steps.changes.outputs.changed == 'true'env
         run: |
           set -e
           git checkout -b apply-formatting-to-pr-${PR_NUMBER}
@@ -64,8 +60,7 @@ jobs:
           git commit -m "Apply code formatting with Black and Prettier"
           git push --set-upstream https://github.com/${{ github.repository }} apply-formatting-to-pr-${PR_NUMBER}
           gh pr create \
-            --title "Code formatting after PR #${PR_NUMBER} merge" \
-            --body "Applied Black (Python) and Prettier (JavaScript) formatting after PR merge to main." \
+            --title "Code formatting after PR#${PR_NUMBER} merge" \
+            --body "Applied Black (Python) and Prettier (JavaScript) formatting after merging #${PR_NUMBER} to main." \
             --head apply-formatting-to-pr-${PR_NUMBER} \
             --base main
-        shell: bash
