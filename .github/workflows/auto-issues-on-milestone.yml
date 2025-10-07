@@ -11,7 +11,7 @@ jobs:
       - name: Create Issues for New Milestone
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets._GITHUB_PAT }}
+          github-token: ${{ secrets.AUTO_PAT }}
           script: |
             const milestoneTitle = context.payload.milestone.title;
             const milestoneNumber = context.payload.milestone.number;
