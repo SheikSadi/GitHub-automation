@@ -29,15 +29,12 @@ jobs:
       - name: Install Black
         run: pip install black
 
-      - name: Install Prettier
-        run: npm install --global prettier
-
       - name: Run Black on Python files
         run: black .
         working-directory: ./geo_backend
 
       - name: Run Prettier on JS files
-        run: prettier --write "**/*.js"
+        run: npx prettier --write "**/*.js"
         working-directory: ./geo_frontend
 
       - name: Check for changes
@@ -62,7 +59,7 @@ jobs:
           git commit -m "Apply code formatting with Black and Prettier"
           git push --set-upstream https://x-access-token:${PR_BOT_TOKEN}@github.com/${{ github.repository }} apply-formatting/${{ github.run_id }}
           gh pr create \
-            --title "Code formatting after #${{ PR_NUMBER }} merge" \
+            --title "Code formatting after #${PR_NUMBER} merge" \
             --body "Applied Black (Python) and Prettier (JavaScript) formatting after PR merge to main." \
             --head apply-formatting/${{ github.run_id }} \
             --base main
