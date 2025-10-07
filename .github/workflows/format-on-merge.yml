@@ -40,8 +40,8 @@ jobs:
       - name: Check for changes
         id: changes
         run: |
-          git config --global user.name "github-bot"
-          git config --global user.email "bot@example.com"
+          git config --global user.name "elelem-bot"
+          git config --global user.email "github.bot@elelem.ai"
           if [[ -n $(git status --porcelain) ]]; then
             echo "changed=true" >> $GITHUB_OUTPUT
           else
@@ -51,13 +51,14 @@ jobs:
       - name: Create PR with formatting changes
         if: steps.changes.outputs.changed == 'true'
         env:
-          PR_BOT_TOKEN: ${{ secrets.AUTO_PAT }}
+          GH_TOKEN: ${{ secrets.AUTO_PAT }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
+          set -e
           git checkout -b apply-formatting-to-pr-${PR_NUMBER}
           git add .
           git commit -m "Apply code formatting with Black and Prettier"
-          git push --set-upstream https://x-access-token:${PR_BOT_TOKEN}@github.com/${{ github.repository }} apply-formatting-to-pr-${PR_NUMBER}
+          git push --set-upstream https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }} apply-formatting-to-pr-${PR_NUMBER}
           gh pr create \
             --title "Code formatting after #${PR_NUMBER} merge" \
             --body "Applied Black (Python) and Prettier (JavaScript) formatting after PR merge to main." \
