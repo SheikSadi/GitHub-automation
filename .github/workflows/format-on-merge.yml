@@ -52,7 +52,7 @@ jobs:
           fi
 
       - name: Create PR with formatting changes
-        if: steps.changes.outputs.changed == 'true'env
+        if: steps.changes.outputs.changed == 'true'
         run: |
           set -e
           git checkout -b apply-formatting-to-pr-${PR_NUMBER}
