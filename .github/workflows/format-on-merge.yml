@@ -25,7 +25,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.13.2'
-          cache: 'pip'
 
       - name: Run Black on Python files
         run: black .
@@ -65,7 +64,7 @@ jobs:
           git commit -m "Apply code formatting with Black and Prettier"
           git push --set-upstream https://github.com/${{ github.repository }} apply-formatting-to-pr-${PR_NUMBER}
           gh pr create \
-            --title "Code formatting after #${PR_NUMBER} merge" \
+            --title "Code formatting after PR #${PR_NUMBER} merge" \
             --body "Applied Black (Python) and Prettier (JavaScript) formatting after PR merge to main." \
             --head apply-formatting-to-pr-${PR_NUMBER} \
             --base main
