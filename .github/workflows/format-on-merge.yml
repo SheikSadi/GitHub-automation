@@ -54,7 +54,7 @@ jobs:
       - name: Create PR with formatting changes
         if: steps.changes.outputs.changed == 'true'
         env:
-          PR_BOT_TOKEN: ${{ secrets.PR_BOT_TOKEN }}
+          PR_BOT_TOKEN: ${{ secrets.AUTO_PAT }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           git checkout -b format/${{ github.run_id }}
