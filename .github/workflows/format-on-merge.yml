@@ -5,9 +5,16 @@ on:
     branches:
     - main
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   apply-formatting-and-open-pr:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.PR_BOT_TOKEN }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
     
     steps:
       - name: Checkout code
@@ -49,9 +56,6 @@ jobs:
 
       - name: Create PR with formatting changes
         if: steps.changes.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.AUTO_PAT }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           set -e
           git checkout -b apply-formatting-to-pr-${PR_NUMBER}
