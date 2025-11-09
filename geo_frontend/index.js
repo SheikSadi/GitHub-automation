@@ -24,7 +24,7 @@ return this.b.join(",")
  }
 }
 
-let y = foo(7)
+let y = foo(9)
 console.log(y)
 let obj = new MyClass()
 obj.add(5)
