@@ -1,0 +1,88 @@
+name: Format Code on Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  apply-formatting-and-open-pr:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.AUTO_PAT }}
+      RELEASE_TAG: ${{ github.event.release.tag_name }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13.2'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.16.0'
+
+      - name: Install Black
+        run: pip install black
+
+      - name: Run Black on Python files
+        run: black .
+        working-directory: ./geo_backend
+
+      - name: Run Prettier on JS files
+        run: npx prettier --write "**/*.js"
+        working-directory: ./geo_frontend
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git config --global user.name "elelem-bot"
+          git config --global user.email "github.bot@elelem.ai"
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Close existing apply-formatting PRs and delete branches
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          set +e
+          EXISTING_PR_INFO=$(gh pr list --state open --json number,headRefName --jq '.[] | select(.headRefName | startswith("apply-formatting/")) | "\(.number) \(.headRefName)"')
+          if [[ -n "$EXISTING_PR_INFO" ]]; then
+            while read -r pr_info; do
+              PR_NUMBER=$(echo "$pr_info" | awk '{print $1}')
+              BRANCH_NAME=$(echo "$pr_info" | awk '{print $2}')
+              gh pr close "$PR_NUMBER" --comment "Closing stale formatting PR after new release (${RELEASE_TAG})."
+              git push origin --delete "$BRANCH_NAME"
+            done <<< "$EXISTING_PR_INFO"
+          fi
+
+      - name: Create PR with formatting changes
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          set -e
+          git checkout main
+          git pull origin main
+          git checkout -b apply-formatting/release-${RELEASE_TAG}
+          git add .
+          git commit -m "Apply code formatting with Black and Prettier"
+          git push --set-upstream origin apply-formatting/release-${RELEASE_TAG}
+          gh pr create \
+            --title "Code formatting after release ${RELEASE_TAG}" \
+            --body "Applied Black (Python) and Prettier (JavaScript) formatting after publishing release ${RELEASE_TAG} to main." \
+            --head apply-formatting/release-${RELEASE_TAG} \
+            --base main \
+            --reviewer SheikSadi,MahdeeMushfiqueKamal
+
+      - name: Echo skipped message
+        if: steps.changes.outputs.changed == 'false'
+        run: echo "PR creation skipped - No changes detected."
